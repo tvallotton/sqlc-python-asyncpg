@@ -1,0 +1,5 @@
+from {{package}}.models.{{default_schema}} import (
+    {%- for model in models%}
+    {{model.python_type.declaration}},
+    {%- endfor %}
+)
