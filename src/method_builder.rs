@@ -1,13 +1,14 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    method::{MaybeEmbeddedType, MethodOutput},
+    method::{MaybeEmbeddedType, Method, MethodOutput, MethodParameter},
     model::Model,
     model_file::ModelFile,
     options::Options,
     proto::Identifier,
     python_type::PythonType,
     query::Query,
+    query_class::QueryNamespace,
     utils::to_pascal_case,
 };
 
@@ -24,7 +25,15 @@ impl<'a> MethodBuilder<'a> {
         }
     }
 
-    pub fn get_method_output(&self, query: &Query) -> MethodOutput {
+    pub fn build_method(&mut self, query: Query) -> Method {
+        Method {
+            output: self.get_method_output(&query),
+            parameters: MethodParameter::get_params_from_query(&query, self.options),
+            query: query,
+        }
+    }
+
+    pub fn get_method_output(&mut self, query: &Query) -> MethodOutput {
         if let Some(output) = self.search_for_fitting_model(query) {
             return output;
         }
@@ -32,7 +41,38 @@ impl<'a> MethodBuilder<'a> {
         self.create_from_query(query)
     }
 
-    pub fn create_from_query(&self, query: &Query) -> MethodOutput {
+    pub fn create_from_query(&mut self, query: &Query) -> MethodOutput {
+        let fields = query
+            .columns
+            .iter()
+            .map(|column| {
+                if let Some(table) = column.embed_table.as_ref() {
+                    let model = self.get_model(&table).unwrap().clone();
+                    return (column.name.clone(), model.python_type.clone());
+                }
+                (column.name.clone(), self.options.get_python_type(column))
+            })
+            .collect();
+
+        let model = Model {
+            table_name: None,
+            python_type: query.model_type(self.options),
+            fields,
+        };
+        match self.model_files.get_mut(query.module_name()) {
+            Some(model_file) => {
+                model_file.add_model(model);
+            }
+            None => {
+                self.model_files.insert(
+                    query.module_name().into(),
+                    ModelFile {
+                        models: vec![model],
+                    },
+                );
+            }
+        }
+
         let fields = query
             .columns
             .iter()
@@ -49,17 +89,16 @@ impl<'a> MethodBuilder<'a> {
             .collect();
 
         MethodOutput {
-            python_type: query.model_type(),
+            python_type: query.model_type(self.options),
             fields,
         }
     }
 
     pub fn search_for_fitting_model(&self, query: &Query) -> Option<MethodOutput> {
-        dbg!();
         let column = query.columns.get(0)?;
-        dbg!();
+
         let model = self.get_model(column.table.as_ref()?)?;
-        dbg!();
+
         let query_columns = query
             .columns
             .iter()

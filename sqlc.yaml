@@ -2,7 +2,7 @@ version: "2"
 plugins:
   - name: hello_world
     wasm:
-      url: file://./target/wasm32-wasip1/release/sqlc-gen-json-wasm.wasm
+      url: file://./target/wasm32-wasip1/debug/sqlc-gen-json-wasm.wasm
       # sha256: 2ea9a7f195f517331d75d1fae65f8f38ee3d6b70f734a3fe086b382a2f66b781
 
 sql:
@@ -19,10 +19,10 @@ sql:
         out: "tutorial"
         sql_package: "pgx/v5"
     codegen:
-      - out: test/gen
+      - out: test/query
         plugin: hello_world
         options:
-          package: authors
+          package: test.query
           use_namespace: true
 
           types:

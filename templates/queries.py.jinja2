@@ -1,47 +1,107 @@
+{%- macro CONSTRUCT_OUTPUT(output, ident_width) -%}
+{{output.python_type.constructor}}(
+{%- filter indent(ident_width) %}
+    {%- for field in output.fields -%}
+    {%- if output.fields[field].type == "Simple" %}
+    {%- if output.fields[field].decode %}
+    {{field}}={{output.fields[field].decode}}(row["{{field}}"]),
+    {%- else%}
+    {{field}}=row["{{field}}"],
+    {%- endif %}
+    {%- else %}
+    {%- set embedded = output.fields[field] %}
+    {{field}}={{embedded.python_type.constructor}}(
+        {%- for field in embedded.fields -%}
+        {%- if embedded.fields[field].decode %}
+        {{field}}={{embedded.fields[field].decode}}(row["{{field}}"]),
+        {%- else %}
+        {{field}}=row["{{field}}"],
+        {%- endif %}
+        {%- endfor %}
+    ),
+    {%- endif %}
+    {%- endfor %}
+)
+{%- endfilter %}
+{%- endmacro -%}
 
 
-{%- for import_ in imports -%}
+{%- macro DECLARE_PARAMETERS(parameters) -%}
+    {%- for parameter in parameters -%}
+    , {{parameter.name}}: {{parameter.python_type.annotation}}
+    {%- endfor -%}
+{%- endmacro -%}
+
+{%- macro RENDER_METHOD(method) -%}
+{%- if method.query.cmd == ':one' -%}
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> {{method.output.python_type.annotation}} | None:
+    row = await self.connection.fetchrow(
+        self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        , {{parameter.name}}
+        {%- endfor %}
+    )
+    if row is None:
+        return None
+    return {{CONSTRUCT_OUTPUT(method.output, 4)}}
+{%- elif method.query.cmd == ':many' -%}
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> list[{{method.output.python_type.annotation}}]:
+    rows = await self.connection.fetch(
+        self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        , {{parameter.name}}
+        {%- endfor %}
+    )
+    return [
+        {{CONSTRUCT_OUTPUT(method.output, 8)}}
+        for row in rows
+    ]
+{%- elif method.query.cmd == ':exec' -%}
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> str:
+    return await self.connection.exec(
+        self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        , {{parameter.name}}
+        {%- endfor %}
+    )
+{%- endif -%}
+{%- endmacro -%}
+
+{%- for import_ in imports %}
 {{import_}}
-{% endfor %}
+{%- endfor %}
 
-
-
-{% macro NAMESPACE(namespace) %}
-{%- for query_namespace in namespace.subnamespaces -%}
-{{NAMESPACE(namespace)}}
-{%- endfor -%}
+{%- macro NAMESPACE(namespace) -%}
+{%- for subnamespace in namespace.subnamespaces %}
+{{NAMESPACE(namespace.subnamespaces[subnamespace])}}
+{%- endfor %}
 
 @dataclasses.dataclass
-class {{query_namespace}}:
+class {{namespace.name}}:
     connection: asyncpg.Connection
-    {%- for namespace in namespace.subnamespaces %}
-    {{namepsace}}: {{namespace.python_type.annotation}}
+    {%- for name in namespace.subnamespaces %}
+    {{name}}: {{namespace.subnamespaces[name].name}}
     {%- endfor %}
 
-
-    {% for method in namespace.methods %}
-    {{method.name | upper }} = {{method.query.text}}
-    {% enfor %}
-
+    {% for method in namespace.methods -%}
+    {{method.query.name | upper }} = """
+    {%- filter indent(4) %}
+    {{method.query.text}}
+    {%- endfilter %}
+    """
+    {% endfor -%}
+{{""}}
     def __init__(self, connection: asyncpg.Connection):
         self.connection = connection
-        {%- for namespace in namespace.subnamespaces %}
-        self.{{namepsace}} = {{namespace.python_type.constructor}}(connection)
+        {%- for name in namespace.subnamespaces %}
+        self.{{name}} = {{namespace.subnamespaces[name].name}}(connection)
         {%- endfor %}
 
-
-
-{% endmacro %}
-
-{% for query_namespace in query_namespaces %}
-{% for subnamespace in query_namespace %}
-{% endfor %}
-
-
-@dataclasses.dataclass
-class {{query_namespace}}:
-    connection: asyncpg.Connection
-    {{}}
-
-
-{% endfor %}
+    {% for method in namespace.methods %}
+    {%- filter indent(4) %}
+{{RENDER_METHOD(method)}}
+{{""}}
+    {%- endfilter %}
+    {%- endfor %}
+{%- endmacro %}
+{{NAMESPACE(namespace)}}

@@ -3,7 +3,7 @@ use crate::mock;
 use crate::{model::Model, options::Options, proto::Schema};
 use std::collections::{BTreeMap, BTreeSet};
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, serde::Serialize)]
 pub struct ModelFile {
     pub models: Vec<Model>,
 }

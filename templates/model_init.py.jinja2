@@ -1,3 +1,6 @@
+{%- for filename in model_files %}
+from . import {{filename}}
+{%- endfor %}
 from {{package}}.models.{{default_schema}} import (
     {%- for model in models%}
     {{model.python_type.declaration}},

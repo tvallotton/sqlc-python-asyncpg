@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     method::{self, Method},
+    proto::File,
     utils::to_pascal_case,
 };
 
@@ -36,7 +37,7 @@ impl QueryNamespace {
         let entry = self.subnamespaces.entry(name[0].into());
 
         let namespace = entry.or_insert_with(|| QueryNamespace {
-            name: to_pascal_case(name[0].into()),
+            name: to_pascal_case(name[0].into()) + "Queries",
             methods: Default::default(),
             subnamespaces: Default::default(),
         });
@@ -48,9 +49,31 @@ impl QueryNamespace {
         self.methods.insert(method);
     }
 
-    pub fn imports<'a>(&'a self, imports: &mut BTreeSet<&'a str>) {
+    pub fn _imports<'a>(&'a self, imports: &mut BTreeSet<&'a str>) {
         for method in &self.methods {
             method.imports(imports);
+        }
+
+        for (_, namespace) in &self.subnamespaces {
+            namespace._imports(imports);
+        }
+    }
+
+    pub fn imports<'a>(&'a self) -> BTreeSet<&'a str> {
+        let mut imports = BTreeSet::default();
+        self._imports(&mut imports);
+        imports.insert("import dataclasses");
+        imports.insert("import asyncpg");
+        return imports;
+    }
+
+    pub fn render(&self) -> File {
+        File {
+            name: "queries.py".into(),
+            contents: minijinja::render!(
+                include_str!("../templates/queries.py.jinja2"), namespace => self, imports => self.imports()
+            )
+            .into_bytes(),
         }
     }
 }

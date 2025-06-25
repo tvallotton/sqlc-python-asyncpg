@@ -24,7 +24,7 @@ impl Model {
         Model {
             table_name: table.rel.as_ref().map(|rel| rel.name.clone()),
             fields: Self::column_to_fields(&table.columns, options),
-            python_type: table.model_type(),
+            python_type: table.model_type(options),
         }
     }
 
@@ -34,7 +34,7 @@ impl Model {
         Model {
             table_name: None,
             fields: Self::column_to_fields(&query.columns, options),
-            python_type: query.model_type(),
+            python_type: query.model_type(options),
         }
     }
 

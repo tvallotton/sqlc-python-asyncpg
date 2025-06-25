@@ -3,6 +3,7 @@ use std::sync::{LazyLock, OnceLock};
 use regex::Regex;
 
 use crate::{
+    options::Options,
     proto::{Column, Identifier, Parameter},
     python_type::PythonType,
     utils::to_pascal_case,
@@ -36,15 +37,15 @@ impl Query {
     }
 
     pub fn qualified_model_name(&self) -> String {
-        format!("{}.{}", self.module_name(), self.model_name())
+        format!("models.{}.{}", self.module_name(), self.model_name())
     }
 
-    pub fn model_type(&self) -> PythonType {
+    pub fn model_type(&self, options: &Options) -> PythonType {
         PythonType {
             declaration: Some(self.model_name()),
             constructor: self.qualified_model_name(),
             annotation: self.qualified_model_name(),
-            import: Some("import ".into()),
+            import: Some(format!("from {} import models", options.package)),
             encode: None,
             decode: None,
         }
@@ -58,6 +59,22 @@ impl Query {
             .unwrap_or_else(|| &self.filename);
 
         return name;
+    }
+
+    pub fn namespace_name(&self) -> String {
+        static PATTERN: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"\s*namespace:\s*([\w.]+)\s*").unwrap());
+
+        for val in &self.comments {
+            if let Some(capture) = PATTERN.captures(&val) {
+                return capture.get(1).unwrap().as_str().into();
+            }
+        }
+
+        self.filename
+            .strip_suffix(".sql")
+            .unwrap_or(&self.filename)
+            .into()
     }
 }
 

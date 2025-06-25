@@ -4,7 +4,7 @@
 
 {%- for model in models -%}
 {{"\n"}}
-@dataclass.dataclass
+@dataclasses.dataclass
 class {{model.python_type.declaration}}:
     {%- for field in model.fields %}
     {{field}}: {{model.fields[field].annotation}}

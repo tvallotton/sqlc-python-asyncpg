@@ -1,6 +1,7 @@
 #[cfg(test)]
 use crate::mock;
 use crate::{
+    options::Options,
     proto::{Column, Identifier},
     python_type::PythonType,
     utils::{to_pascal_case, to_snake_case},
@@ -28,12 +29,12 @@ impl Table {
         format!("models.{}.{}", self.schema_name(), self.model_name())
     }
 
-    pub fn model_type(&self) -> PythonType {
+    pub fn model_type(&self, options: &Options) -> PythonType {
         PythonType {
             constructor: self.qualified_model_name(),
             declaration: Some(self.model_name()),
             annotation: self.qualified_model_name(),
-            import: Some(format!("import models.{}", self.schema_name())),
+            import: Some(format!("from {} import models", options.package)),
             encode: None,
             decode: None,
         }

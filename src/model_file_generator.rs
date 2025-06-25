@@ -20,7 +20,13 @@ impl ModelFileGenerator {
 
     pub fn init_file_contents(&self) -> Vec<u8> {
         let model_file = self.model_files.get(&self.default_schema);
-        minijinja::render!(include_str!("../templates/model_init.py.jinja2"), package => self.package, default_schema => self.default_schema, models => model_file.unwrap().models ).into_bytes()
+        minijinja::render!(include_str!("../templates/model_init.py.jinja2"),
+            package => self.package,
+            default_schema => self.default_schema,
+            models => model_file.unwrap().models,
+            model_files => self.model_files,
+        )
+        .into_bytes()
     }
 
     pub fn into_files(self) -> impl Iterator<Item = File> {
@@ -31,7 +37,7 @@ impl ModelFileGenerator {
         self.model_files
             .into_iter()
             .map(|(filename, model_file)| File {
-                name: filename,
+                name: format!("models/{filename}.py"),
                 contents: model_file.render().into_bytes(),
             })
             .chain(Some(init_file).into_iter())
