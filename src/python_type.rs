@@ -1,3 +1,5 @@
+use std::{collections::BTreeSet, convert::Infallible};
+
 #[cfg(test)]
 use crate::mock;
 
@@ -40,10 +42,6 @@ macro_rules! new_type {
 }
 
 impl PythonType {
-    pub fn imports(&self) -> impl Iterator<Item = &str> {
-        self.import.as_deref().into_iter()
-    }
-
     pub fn from_pg_type(name: &str) -> Self {
         match name {
             "anyarray" | "anyenum" => new_type!("list[typing.Any]", "import typing"),

@@ -12,7 +12,7 @@ impl GenerateRequest {
         let schema = &self.catalog.as_ref()?.default_schema;
         self.queries
             .iter_mut()
-            .map(|query| query.normalize_identifiers(schema));
+            .for_each(|query| query.normalize_identifiers(schema));
         None
     }
 }
@@ -76,6 +76,9 @@ impl Query {
         for column in &mut self.columns {
             column.normalize_identifiers(default_schema);
         }
+        self.columns
+            .sort_by(|column1, column2| column1.name.cmp(&column2.name));
+
         self.insert_into_table
             .as_mut()
             .map(|ident| ident.normalize(default_schema));

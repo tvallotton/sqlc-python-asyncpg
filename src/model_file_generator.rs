@@ -1,6 +1,6 @@
 #[cfg(test)]
 use crate::mock;
-use crate::{model_file::ModelFile, utils::to_snake_case};
+use crate::{model_file::ModelFile, proto::File, utils::to_snake_case};
 use std::collections::BTreeMap;
 
 pub struct ModelFileGenerator {
@@ -18,9 +18,23 @@ impl ModelFileGenerator {
         }
     }
 
-    pub fn init_file_contents(&self) -> String {
+    pub fn init_file_contents(&self) -> Vec<u8> {
         let model_file = self.model_files.get(&self.default_schema);
-        minijinja::render!(include_str!("../templates/model_init.py.jinja2"), package => self.package, default_schema => self.default_schema, models => model_file.unwrap().models )
+        minijinja::render!(include_str!("../templates/model_init.py.jinja2"), package => self.package, default_schema => self.default_schema, models => model_file.unwrap().models ).into_bytes()
+    }
+
+    pub fn into_files(self) -> impl Iterator<Item = File> {
+        let init_file = File {
+            name: "models/__init__.py".into(),
+            contents: self.init_file_contents(),
+        };
+        self.model_files
+            .into_iter()
+            .map(|(filename, model_file)| File {
+                name: filename,
+                contents: model_file.render().into_bytes(),
+            })
+            .chain(Some(init_file).into_iter())
     }
 }
 
@@ -31,7 +45,7 @@ fn model_file_generator_generate() {
     public.models.push(mock::user_model());
     generator.model_files.insert("public".into(), public);
 
-    let expected = r#"from app.models.public import (
+    let expected = br#"from app.models.public import (
     User,
 )"#;
     assert_eq!(generator.init_file_contents(), expected);

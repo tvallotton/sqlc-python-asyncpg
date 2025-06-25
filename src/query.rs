@@ -1,5 +1,10 @@
+use std::sync::{LazyLock, OnceLock};
+
+use regex::Regex;
+
 use crate::{
     proto::{Column, Identifier, Parameter},
+    python_type::PythonType,
     utils::to_pascal_case,
 };
 
@@ -29,11 +34,41 @@ impl Query {
     pub fn model_name(&self) -> String {
         to_pascal_case(&self.name) + "Row"
     }
+
+    pub fn qualified_model_name(&self) -> String {
+        format!("{}.{}", self.module_name(), self.model_name())
+    }
+
+    pub fn model_type(&self) -> PythonType {
+        PythonType {
+            declaration: Some(self.model_name()),
+            constructor: self.qualified_model_name(),
+            annotation: self.qualified_model_name(),
+            import: Some("import ".into()),
+            encode: None,
+            decode: None,
+        }
+    }
+
+    pub fn module_name(&self) -> &str {
+        let name = self
+            .filename
+            .split_once('.')
+            .map(|(first, _)| first)
+            .unwrap_or_else(|| &self.filename);
+
+        return name;
+    }
 }
 
 #[test]
 fn model_name() {
     let model = crate::mock::query_get_all_posts();
-
     assert_eq!(model.model_name(), "GetAllPostsRow");
+}
+
+#[test]
+fn qualified_model_name() {
+    let model = crate::mock::query_get_all_posts();
+    assert_eq!(model.qualified_model_name(), "foo.GetAllPostsRow");
 }

@@ -1,0 +1,47 @@
+
+
+{%- for import_ in imports -%}
+{{import_}}
+{% endfor %}
+
+
+
+{% macro NAMESPACE(namespace) %}
+{%- for query_namespace in namespace.subnamespaces -%}
+{{NAMESPACE(namespace)}}
+{%- endfor -%}
+
+@dataclasses.dataclass
+class {{query_namespace}}:
+    connection: asyncpg.Connection
+    {%- for namespace in namespace.subnamespaces %}
+    {{namepsace}}: {{namespace.python_type.annotation}}
+    {%- endfor %}
+
+
+    {% for method in namespace.methods %}
+    {{method.name | upper }} = {{method.query.text}}
+    {% enfor %}
+
+    def __init__(self, connection: asyncpg.Connection):
+        self.connection = connection
+        {%- for namespace in namespace.subnamespaces %}
+        self.{{namepsace}} = {{namespace.python_type.constructor}}(connection)
+        {%- endfor %}
+
+
+
+{% endmacro %}
+
+{% for query_namespace in query_namespaces %}
+{% for subnamespace in query_namespace %}
+{% endfor %}
+
+
+@dataclasses.dataclass
+class {{query_namespace}}:
+    connection: asyncpg.Connection
+    {{}}
+
+
+{% endfor %}

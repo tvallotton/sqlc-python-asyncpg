@@ -1,14 +1,22 @@
 #[cfg(test)]
 use crate::mock;
-use crate::{model::Model, options::Options};
+use crate::{model::Model, options::Options, proto::Schema};
 use std::collections::{BTreeMap, BTreeSet};
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ModelFile {
     pub models: Vec<Model>,
 }
 
 impl ModelFile {
+    pub fn from_schema(schema: &Schema, options: &Options) -> Self {
+        let mut model_file = ModelFile::default();
+        for table in &schema.tables {
+            model_file.add_model(Model::from_table(&table, options));
+        }
+        model_file
+    }
+
     pub fn imports(&self) -> BTreeSet<&str> {
         self.models
             .iter()

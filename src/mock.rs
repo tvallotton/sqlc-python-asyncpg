@@ -1,6 +1,8 @@
+use std::collections::BTreeMap;
+
 #[cfg(test)]
 use crate::proto::Column;
-use crate::{model::Model, options::Options, query::Query, table::Table};
+use crate::{model::Model, model_file::ModelFile, options::Options, query::Query, table::Table};
 
 #[cfg(test)]
 pub fn uuid_column() -> Column {
@@ -14,9 +16,9 @@ pub fn uuid_column() -> Column {
       "is_named_param": false,
       "is_func_call": false,
       "scope": "",
-      "table": { "catalog": "", "schema": "", "name": "post" },
+      "table": { "catalog": "", "schema": "public", "name": "post" },
       "table_alias": "",
-      "type": { "catalog": "", "schema": "", "name": "uuid" },
+      "type": { "catalog": "", "schema": "public", "name": "uuid" },
       "is_sqlc_slice": false,
       "embed_table": null,
       "original_name": "",
@@ -39,9 +41,9 @@ pub fn geometry_column() -> Column {
       "is_named_param": false,
       "is_func_call": false,
       "scope": "",
-      "table": { "catalog": "", "schema": "", "name": "geolocation" },
+      "table": { "catalog": "", "schema": "public", "name": "geolocation" },
       "table_alias": "",
-      "type": { "catalog": "", "schema": "", "name": "geometry" },
+      "type": { "catalog": "", "schema": "public", "name": "geometry" },
       "is_sqlc_slice": false,
       "embed_table": null,
       "original_name": "",
@@ -64,9 +66,9 @@ pub fn int_array_column() -> Column {
       "is_named_param": false,
       "is_func_call": false,
       "scope": "",
-      "table": { "catalog": "", "schema": "", "name": "profile" },
+      "table": { "catalog": "", "schema": "public", "name": "profile" },
       "table_alias": "",
-      "type": { "catalog": "", "schema": "", "name": "integer" },
+      "type": { "catalog": "", "schema": "public", "name": "integer" },
       "is_sqlc_slice": false,
       "embed_table": null,
       "original_name": "",
@@ -89,9 +91,9 @@ pub fn f64_matrix_column() -> Column {
       "is_named_param": false,
       "is_func_call": false,
       "scope": "",
-      "table": { "catalog": "", "schema": "", "name": "profile" },
+      "table": { "catalog": "", "schema": "public", "name": "profile" },
       "table_alias": "",
-      "type": { "catalog": "", "schema": "", "name": "double" },
+      "type": { "catalog": "", "schema": "public", "name": "double" },
       "is_sqlc_slice": false,
       "embed_table": null,
       "original_name": "",
@@ -114,9 +116,9 @@ pub fn nullable_string_column() -> Column {
       "is_named_param": false,
       "is_func_call": false,
       "scope": "",
-      "table": { "catalog": "", "schema": "", "name": "profile" },
+      "table": { "catalog": "", "schema": "public", "name": "profile" },
       "table_alias": "",
-      "type": { "catalog": "", "schema": "", "name": "text" },
+      "type": { "catalog": "", "schema": "public", "name": "text" },
       "is_sqlc_slice": false,
       "embed_table": null,
       "original_name": "",
@@ -128,9 +130,9 @@ pub fn nullable_string_column() -> Column {
 }
 
 pub fn user_table() -> Table {
-    let mut table: Table = serde_json::from_str(
+    serde_json::from_str(
         r#" {
-      "rel": { "catalog": "", "schema": "", "name": "user" },
+      "rel": { "catalog": "", "schema": "public", "name": "user" },
       "columns": [
         {
           "name": "id",
@@ -141,9 +143,9 @@ pub fn user_table() -> Table {
           "is_named_param": false,
           "is_func_call": false,
           "scope": "",
-          "table": { "catalog": "", "schema": "", "name": "user" },
+          "table": { "catalog": "", "schema": "public", "name": "user" },
           "table_alias": "",
-          "type": { "catalog": "", "schema": "", "name": "uuid" },
+          "type": { "catalog": "", "schema": "public", "name": "uuid" },
           "is_sqlc_slice": false,
           "embed_table": null,
           "original_name": "",
@@ -159,9 +161,9 @@ pub fn user_table() -> Table {
           "is_named_param": false,
           "is_func_call": false,
           "scope": "",
-          "table": { "catalog": "", "schema": "", "name": "user" },
+          "table": { "catalog": "", "schema": "public", "name": "user" },
           "table_alias": "",
-          "type": { "catalog": "", "schema": "", "name": "text" },
+          "type": { "catalog": "", "schema": "public", "name": "text" },
           "is_sqlc_slice": false,
           "embed_table": null,
           "original_name": "",
@@ -172,13 +174,11 @@ pub fn user_table() -> Table {
       "comment": ""
     }"#,
     )
-    .unwrap();
-    table.normalize_identifiers("public");
-    table
+    .unwrap()
 }
 
 pub fn user_review_table() -> Table {
-    let mut table: Table = serde_json::from_str(
+    serde_json::from_str(
         r#" {
       "rel": { "catalog": "", "schema": "post", "name": "user_review" },
       "columns": [
@@ -193,7 +193,7 @@ pub fn user_review_table() -> Table {
           "scope": "",
           "table": { "catalog": "", "schema": "post", "name": "user_review" },
           "table_alias": "",
-          "type": { "catalog": "", "schema": "", "name": "uuid" },
+          "type": { "catalog": "", "schema": "public", "name": "uuid" },
           "is_sqlc_slice": false,
           "embed_table": null,
           "original_name": "",
@@ -211,7 +211,7 @@ pub fn user_review_table() -> Table {
           "scope": "",
           "table": { "catalog": "", "schema": "post", "name": "user_review" },
           "table_alias": "",
-          "type": { "catalog": "", "schema": "", "name": "text" },
+          "type": { "catalog": "", "schema": "public", "name": "text" },
           "is_sqlc_slice": false,
           "embed_table": null,
           "original_name": "",
@@ -222,13 +222,11 @@ pub fn user_review_table() -> Table {
       "comment": ""
     }"#,
     )
-    .unwrap();
-    table.normalize_identifiers("public");
-    table
+    .unwrap()
 }
 
 pub fn query_get_all_posts() -> Query {
-    let mut query: Query = serde_json::from_str(
+    serde_json::from_str(
         r#"{
       "text": "select\n    post.id, post.author_id, post.title\nfrom\n    \"post\"",
       "name": "get_all_posts",
@@ -245,9 +243,9 @@ pub fn query_get_all_posts() -> Query {
           "scope": "",
           "table": null,
           "table_alias": "",
-          "type": { "catalog": "", "schema": "", "name": "" },
+          "type": { "catalog": "", "schema": "public", "name": "" },
           "is_sqlc_slice": false,
-          "embed_table": { "catalog": "", "schema": "", "name": "post" },
+          "embed_table": { "catalog": "", "schema": "public", "name": "post" },
           "original_name": "",
           "unsigned": false,
           "array_dims": 0
@@ -259,11 +257,164 @@ pub fn query_get_all_posts() -> Query {
       "insert_into_table": null
     }"#,
     )
-    .unwrap();
-    query.normalize_identifiers("public");
-    query
+    .unwrap()
 }
 
 pub fn user_model() -> Model {
     Model::from_table(&user_table(), &Options::default())
+}
+
+pub fn post_table() -> Table {
+    serde_json::from_str(
+        r#"{
+                "rel": { "catalog": "", "schema": "public", "name": "post" },
+                "columns": [
+                  {
+                    "name": "id",
+                    "not_null": true,
+                    "is_array": false,
+                    "comment": "",
+                    "length": -1,
+                    "is_named_param": false,
+                    "is_func_call": false,
+                    "scope": "",
+                    "table": { "catalog": "", "schema": "public", "name": "post" },
+                    "table_alias": "",
+                    "type": { "catalog": "", "schema": "public", "name": "uuid" },
+                    "is_sqlc_slice": false,
+                    "embed_table": null,
+                    "original_name": "",
+                    "unsigned": false,
+                    "array_dims": 0
+                  },
+                  {
+                    "name": "author_id",
+                    "not_null": true,
+                    "is_array": false,
+                    "comment": "",
+                    "length": -1,
+                    "is_named_param": false,
+                    "is_func_call": false,
+                    "scope": "",
+                    "table": { "catalog": "", "schema": "public", "name": "post" },
+                    "table_alias": "",
+                    "type": { "catalog": "", "schema": "public", "name": "uuid" },
+                    "is_sqlc_slice": false,
+                    "embed_table": null,
+                    "original_name": "",
+                    "unsigned": false,
+                    "array_dims": 0
+                  },
+                  {
+                    "name": "title",
+                    "not_null": true,
+                    "is_array": false,
+                    "comment": "",
+                    "length": -1,
+                    "is_named_param": false,
+                    "is_func_call": false,
+                    "scope": "",
+                    "table": { "catalog": "", "schema": "public", "name": "post" },
+                    "table_alias": "",
+                    "type": { "catalog": "", "schema": "public", "name": "text" },
+                    "is_sqlc_slice": false,
+                    "embed_table": null,
+                    "original_name": "",
+                    "unsigned": false,
+                    "array_dims": 0
+                  }
+                ],
+                "comment": ""
+              }"#,
+    )
+    .unwrap()
+}
+pub fn post_model() -> Model {
+    Model::from_table(&post_table(), &Options::default())
+}
+
+pub fn query_fetch_user_by_id() -> Query {
+    serde_json::from_str(
+        r#"{
+      "text": "select id, email from \"user\" where id = $1",
+      "name": "fetch_user_by_id",
+      "cmd": ":one",
+      "columns": [
+        {
+          "name": "id",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": { "catalog": "", "schema": "public", "name": "user" },
+          "table_alias": "",
+          "type": { "catalog": "", "schema": "public", "name": "uuid" },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "id",
+          "unsigned": false,
+          "array_dims": 0
+        },
+        {
+          "name": "email",
+          "not_null": true,
+          "is_array": false,
+          "comment": "",
+          "length": -1,
+          "is_named_param": false,
+          "is_func_call": false,
+          "scope": "",
+          "table": { "catalog": "", "schema": "public", "name": "user" },
+          "table_alias": "",
+          "type": { "catalog": "", "schema": "public", "name": "text" },
+          "is_sqlc_slice": false,
+          "embed_table": null,
+          "original_name": "email",
+          "unsigned": false,
+          "array_dims": 0
+        }
+      ],
+      "params": [
+        {
+          "number": 1,
+          "column": {
+            "name": "id",
+            "not_null": true,
+            "is_array": false,
+            "comment": "",
+            "length": -1,
+            "is_named_param": true,
+            "is_func_call": false,
+            "scope": "",
+            "table": { "catalog": "", "schema": "public", "name": "user" },
+            "table_alias": "",
+            "type": { "catalog": "", "schema": "public", "name": "uuid" },
+            "is_sqlc_slice": false,
+            "embed_table": null,
+            "original_name": "id",
+            "unsigned": false,
+            "array_dims": 0
+          }
+        }
+      ],
+      "comments": [],
+      "filename": "foo.sql",
+      "insert_into_table": null
+    }"#,
+    )
+    .unwrap()
+}
+
+pub fn model_files() -> BTreeMap<String, ModelFile> {
+    let mut files = BTreeMap::default();
+    files.insert(
+        format!("public"),
+        ModelFile {
+            models: vec![user_model(), post_model()],
+        },
+    );
+    return files;
 }

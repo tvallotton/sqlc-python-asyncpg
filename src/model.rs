@@ -4,6 +4,7 @@ use minijinja::filters::map;
 use crate::mock;
 use crate::{
     options::Options,
+    proto::Column,
     python_type::PythonType,
     query::{self, Query},
     table::Table,
@@ -11,35 +12,43 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
-#[derive(Clone, serde::Serialize, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, serde::Serialize, PartialEq, PartialOrd, Ord, Eq)]
 pub struct Model {
-    table_name: Option<String>,
+    pub table_name: Option<String>,
     pub python_type: PythonType,
-    fields: BTreeMap<String, PythonType>,
+    pub fields: BTreeMap<String, PythonType>,
 }
 
 impl Model {
     pub fn from_table(table: &Table, options: &Options) -> Self {
-        let fields = table
-            .columns
-            .iter()
-            .map(|column| (column.name.clone(), options.get_python_type(column)))
-            .collect();
         Model {
             table_name: table.rel.as_ref().map(|rel| rel.name.clone()),
-            fields,
+            fields: Self::column_to_fields(&table.columns, options),
             python_type: table.model_type(),
         }
     }
 
-    pub fn from_query(query: Query, options: &Options) -> Self {
-        todo!()
+    pub fn from_query(query: &Query, options: &Options) -> Self {
+        query.model_name();
+
+        Model {
+            table_name: None,
+            fields: Self::column_to_fields(&query.columns, options),
+            python_type: query.model_type(),
+        }
     }
 
     pub fn imports(&self) -> impl Iterator<Item = &str> {
         self.fields
             .iter()
             .filter_map(|(_, type_)| type_.import.as_deref())
+    }
+
+    pub fn column_to_fields(columns: &[Column], options: &Options) -> BTreeMap<String, PythonType> {
+        columns
+            .iter()
+            .map(|column| (column.name.clone(), options.get_python_type(column)))
+            .collect()
     }
 }
 
@@ -65,8 +74,14 @@ pub fn user_review_table() {
     assert_eq!(model.python_type.declaration.as_deref(), Some("UserReview"));
 }
 
-// #[test]
-// pub fn model_from_query() {
-//     let options = Options::default();
-//     let query = Model::from_query(query, &options)
-// }
+#[test]
+pub fn model_from_query() {
+    let options = Options::default();
+    let model = Model::from_query(&mock::query_fetch_user_by_id(), &options);
+
+    assert_eq!(
+        model.python_type.declaration.as_deref(),
+        Some("FetchUserByIdRow")
+    );
+    model.fields.get("email").unwrap();
+}
