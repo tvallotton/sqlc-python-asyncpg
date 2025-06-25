@@ -1,0 +1,106 @@
+{%- macro CONSTRUCT_OUTPUT(output, ident_width) -%}
+{{output.python_type.constructor}}(
+{%- filter indent(ident_width) %}
+    {%- for field in output.fields -%}
+    {%- if output.fields[field].type == "Simple" %}
+    {%- if output.fields[field].decode %}
+    {{field}}={{output.fields[field].decode}}(row["{{field}}"]),
+    {%- else%}
+    {{field}}=row["{{field}}"],
+    {%- endif %}
+    {%- else %}
+    {%- set embedded = output.fields[field] %}
+    {{field}}={{embedded.python_type.constructor}}(
+        {%- for field in embedded.fields -%}
+        {%- if embedded.fields[field].decode %}
+        {{field}}={{embedded.fields[field].decode}}(row["{{field}}"]),
+        {%- else %}
+        {{field}}=row["{{field}}"],
+        {%- endif %}
+        {%- endfor %}
+    ),
+    {%- endif %}
+    {%- endfor %}
+)
+{%- endfilter %}
+{%- endmacro -%}
+
+
+{%- macro DECLARE_PARAMETERS(parameters) -%}
+    {%- for parameter in parameters -%}
+    , {{parameter.name}}: {{parameter.python_type.annotation}}
+    {%- endfor -%}
+{%- endmacro -%}
+
+{%- macro RENDER_METHOD(method) -%}
+{%- if method.query.cmd == ':one' -%}
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> {{method.output.python_type.annotation}} | None:
+    row = await self.connection.fetchrow(
+        self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        , {{parameter.name}}
+        {%- endfor %}
+    )
+    if row is None:
+        return None
+    return {{CONSTRUCT_OUTPUT(method.output, 4)}}
+{%- elif method.query.cmd == ':many' -%}
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> list[{{method.output.python_type.annotation}}]:
+    rows = await self.connection.fetch(
+        self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        , {{parameter.name}}
+        {%- endfor %}
+    )
+    return [
+        {{CONSTRUCT_OUTPUT(method.output, 8)}}
+        for row in rows
+    ]
+{%- elif method.query.cmd == ':exec' -%}
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> str:
+    return await self.connection.exec(
+        self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        , {{parameter.name}}
+        {%- endfor %}
+    )
+{%- endif -%}
+{%- endmacro -%}
+
+{%- for import_ in imports %}
+{{import_}}
+{%- endfor %}
+
+{%- macro NAMESPACE(namespace) -%}
+{%- for subnamespace in namespace.subnamespaces %}
+{{NAMESPACE(namespace.subnamespaces[subnamespace])}}
+{%- endfor %}
+
+@dataclasses.dataclass
+class {{namespace.name}}:
+    connection: asyncpg.Connection
+    {%- for name in namespace.subnamespaces %}
+    {{name}}: {{namespace.subnamespaces[name].name}}
+    {%- endfor %}
+
+    {% for method in namespace.methods -%}
+    {{method.query.name | upper }} = """
+    {%- filter indent(4) %}
+    {{method.query.text}}
+    {%- endfilter %}
+    """
+    {% endfor -%}
+{{""}}
+    def __init__(self, connection: asyncpg.Connection):
+        self.connection = connection
+        {%- for name in namespace.subnamespaces %}
+        self.{{name}} = {{namespace.subnamespaces[name].name}}(connection)
+        {%- endfor %}
+
+    {% for method in namespace.methods %}
+    {%- filter indent(4) %}
+{{RENDER_METHOD(method)}}{{"\n\n"}}
+    {%- endfilter %}
+    {%- endfor %}
+{%- endmacro %}
+{{NAMESPACE(namespace)}}
