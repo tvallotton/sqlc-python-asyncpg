@@ -1,4 +1,3 @@
-use serde::Serialize;
 use std::collections::BTreeMap;
 use std::fmt::Write;
 

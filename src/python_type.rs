@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 #[cfg(test)]
 use crate::mock;
 

@@ -5,6 +5,7 @@ use std::collections::BTreeSet;
 
 #[derive(Default, Debug, serde::Serialize)]
 pub struct ModelFile {
+    pub is_schema_file: bool,
     pub models: Vec<Model>,
 }
 
@@ -14,6 +15,7 @@ impl ModelFile {
         for table in &schema.tables {
             model_file.add_model(Model::from_table(&table, options));
         }
+        model_file.is_schema_file = true;
         model_file
     }
 
@@ -41,6 +43,7 @@ impl ModelFile {
 fn model_file_imports() {
     let model = Model::from_table(&mock::user_table(), &Options::default());
     let model_file = ModelFile {
+        is_schema_file: true,
         models: vec![model],
     };
     assert!(model_file.imports().contains("import uuid"));
@@ -60,6 +63,7 @@ class User:
 
     let model = Model::from_table(&mock::user_table(), &Options::default());
     let model_file = ModelFile {
+        is_schema_file: true,
         models: vec![model],
     };
     let contents = model_file.render();

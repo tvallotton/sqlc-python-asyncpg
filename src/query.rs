@@ -79,7 +79,7 @@ impl Query {
     }
 
     pub fn module_name(&self) -> String {
-        self.namespace_name()
+        format!("{}_queries", self.namespace_name())
     }
 
     pub fn namespace_name(&self) -> String {

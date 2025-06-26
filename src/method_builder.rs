@@ -51,7 +51,7 @@ impl<'a> MethodFactory<'a> {
             model.protocol_import = None;
         }
 
-        self.model_files.add_model(&query.namespace_name(), model);
+        self.model_files.add_model(&query.module_name(), model);
 
         Some(python_type)
     }

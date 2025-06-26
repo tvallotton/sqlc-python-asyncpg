@@ -1,5 +1,13 @@
 {%- for filename in model_files %}
+{%- if model_files[filename].is_schema_file %}
 from . import {{filename}}
+{%- endif %}
+{%- endfor %}
+
+{%- for filename in model_files %}
+{%- if not model_files[filename].is_schema_file %}
+from . import {{filename}}
+{%- endif %}
 {%- endfor %}
 from {{package}}.models.{{default_schema}} import (
     {%- for model in models%}
