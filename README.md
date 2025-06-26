@@ -49,7 +49,7 @@ options:
 
 ### Type overrides
 
-By default, `sqlc-python-asyncpg` uses the native types returned by the `asyncpg` drive. Some of these may be inconvenient or incompatible with your codebase. This plugin lets you override them as needed:
+By default, `sqlc-python-asyncpg` uses the native types returned by the `asyncpg` driver. Some of these may be inconvenient or incompatible with your codebase. This plugin lets you override them as needed:
 
 ```yaml
 options:
