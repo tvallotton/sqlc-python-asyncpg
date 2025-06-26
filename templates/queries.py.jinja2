@@ -26,43 +26,91 @@
 {%- endmacro -%}
 
 
+<<<<<<< HEAD
 {%- macro DECLARE_PARAMETERS(parameters) -%}
     {%- for parameter in parameters -%}
     , {{parameter.name}}: {{parameter.python_type.annotation}}
     {%- endfor -%}
+=======
+{%- macro DECLARE_PARAMETERS(method) -%}
+    {%- if not method.grouped_argument_type -%}
+        {%- for parameter in method.parameters -%}
+            , {{parameter.name}}: {{parameter.python_type.annotation}}
+        {%- endfor -%}
+    {%- else -%}
+        , input_row: {{method.grouped_argument_type.annotation}}
+    {%- endif -%}
+{%- endmacro -%}
+
+
+{%- macro PASS_PARAMETERS(method) -%}
+self.{{method.query.name | upper }}
+        {%- for parameter in method.parameters -%}
+        {%- if parameter.python_type.encode -%}
+            , {{parameter.python_type.encode}}(
+                {%- if method.grouped_argument_type -%}
+                    input_row.
+                {%- endif -%}
+                {{parameter.name}})
+            {%- else -%}
+            , {% if method.grouped_argument_type -%}
+                input_row.
+            {%- endif -%}
+            {{parameter.name}}
+            {%- endif -%}
+        {%- endfor %}
+>>>>>>> main
 {%- endmacro -%}
 
 {%- macro RENDER_METHOD(method) -%}
 {%- if method.query.cmd == ':one' -%}
+<<<<<<< HEAD
 async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> {{method.output.python_type.annotation}} | None:
     row = await self.connection.fetchrow(
         self.{{method.query.name | upper }}
         {%- for parameter in method.parameters -%}
         , {{parameter.name}}
         {%- endfor %}
+=======
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method)}}) -> {{method.output.python_type.annotation}} | None:
+    row = await self.connection.fetchrow(
+        {{PASS_PARAMETERS(method)}}
+>>>>>>> main
     )
     if row is None:
         return None
     return {{CONSTRUCT_OUTPUT(method.output, 4)}}
 {%- elif method.query.cmd == ':many' -%}
+<<<<<<< HEAD
 async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> list[{{method.output.python_type.annotation}}]:
     rows = await self.connection.fetch(
         self.{{method.query.name | upper }}
         {%- for parameter in method.parameters -%}
         , {{parameter.name}}
         {%- endfor %}
+=======
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method)}}) -> list[{{method.output.python_type.annotation}}]:
+    rows = await self.connection.fetch(
+        {{PASS_PARAMETERS(method)}}
+>>>>>>> main
     )
     return [
         {{CONSTRUCT_OUTPUT(method.output, 8)}}
         for row in rows
     ]
 {%- elif method.query.cmd == ':exec' -%}
+<<<<<<< HEAD
 async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method.parameters)}}) -> str:
     return await self.connection.exec(
         self.{{method.query.name | upper }}
         {%- for parameter in method.parameters -%}
         , {{parameter.name}}
         {%- endfor %}
+=======
+async def {{method.query.name}}(self{{DECLARE_PARAMETERS(method)}}) -> str:
+    return await self.connection.exec(
+        {{PASS_PARAMETERS(method)}}
+>>>>>>> main
     )
 {%- endif -%}
 {%- endmacro -%}
@@ -85,12 +133,20 @@ class {{namespace.name}}:
 
     {% for method in namespace.methods -%}
     {{method.query.name | upper }} = """
+<<<<<<< HEAD
     {%- filter indent(4) %}
     {{method.query.text}}
     {%- endfilter %}
     """
     {% endfor -%}
 {{""}}
+=======
+    {%- filter indent(8) %}
+{{method.query.text}}
+    {%- endfilter %}
+    """
+    {% endfor -%}
+>>>>>>> main
     def __init__(self, connection: asyncpg.Connection):
         self.connection = connection
         {%- for name in namespace.subnamespaces %}
@@ -99,7 +155,12 @@ class {{namespace.name}}:
 
     {% for method in namespace.methods %}
     {%- filter indent(4) %}
+<<<<<<< HEAD
 {{RENDER_METHOD(method)}}{{"\n\n"}}
+=======
+{{RENDER_METHOD(method)}}
+{{""}}
+>>>>>>> main
     {%- endfilter %}
     {%- endfor %}
 {%- endmacro %}

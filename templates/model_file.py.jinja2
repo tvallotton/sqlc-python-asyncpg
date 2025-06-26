@@ -4,8 +4,18 @@
 
 {%- for model in models -%}
 {{"\n"}}
+<<<<<<< HEAD
 @dataclasses.dataclass
 class {{model.python_type.declaration}}:
+=======
+{%- if not model.protocol_import %}
+@dataclasses.dataclass
+{%- endif %}
+class {{model.python_type.declaration}}
+{%- if model.protocol_import -%}
+(typing.Protocol)
+{%- endif -%}:
+>>>>>>> main
     {%- for field in model.fields %}
     {{field}}: {{model.fields[field].annotation}}
     {%- endfor %}

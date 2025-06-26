@@ -86,9 +86,15 @@ impl PythonType {
 impl From<TypeOverrideOptions> for PythonType {
     fn from(value: TypeOverrideOptions) -> Self {
         PythonType {
+<<<<<<< HEAD
             constructor: value.name.clone(),
             declaration: None,
             annotation: value.name,
+=======
+            constructor: value.python_type.clone(),
+            declaration: None,
+            annotation: value.python_type,
+>>>>>>> main
             encode: value.encode.clone(),
             decode: value.decode.clone(),
             import: value.import,
@@ -108,7 +114,11 @@ fn test_type_imports() {
     let json = r#"{ "name": "uuid.UUID", "import": "import uuid" }"#;
     let type_option = serde_json::from_str::<TypeOverrideOptions>(json).unwrap();
     let type_ = PythonType::from(type_option);
+<<<<<<< HEAD
     assert!(type_.imports().any(|import| import == "import uuid"));
+=======
+    assert_eq!(type_.import.as_deref(), Some("import uuid"));
+>>>>>>> main
 }
 
 #[test]

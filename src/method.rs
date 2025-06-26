@@ -14,6 +14,10 @@ pub struct Method {
     pub query: Query,
     pub parameters: Vec<MethodParameter>,
     pub output: MethodOutput,
+<<<<<<< HEAD
+=======
+    pub grouped_argument_type: Option<PythonType>,
+>>>>>>> main
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, PartialOrd, Ord)]

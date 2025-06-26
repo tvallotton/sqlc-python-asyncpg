@@ -1,7 +1,11 @@
 [package]
 name = "sqlc-python-asyncpg"
 version = "0.1.0"
+<<<<<<< HEAD
 authors = ["Tomás Vallotton <tvallotton@uc.cl>"]
+=======
+authors = ["Kyle Conroy <kyle@conroy.org>"]
+>>>>>>> main
 edition = "2018"
 
 [profile.release]

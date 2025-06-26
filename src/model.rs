@@ -17,6 +17,10 @@ pub struct Model {
     pub table_name: Option<String>,
     pub python_type: PythonType,
     pub fields: BTreeMap<String, PythonType>,
+<<<<<<< HEAD
+=======
+    pub protocol_import: Option<&'static str>,
+>>>>>>> main
 }
 
 impl Model {
@@ -25,16 +29,28 @@ impl Model {
             table_name: table.rel.as_ref().map(|rel| rel.name.clone()),
             fields: Self::column_to_fields(&table.columns, options),
             python_type: table.model_type(options),
+<<<<<<< HEAD
+=======
+            protocol_import: None,
+>>>>>>> main
         }
     }
 
     pub fn from_query(query: &Query, options: &Options) -> Self {
+<<<<<<< HEAD
         query.model_name();
 
         Model {
             table_name: None,
             fields: Self::column_to_fields(&query.columns, options),
             python_type: query.model_type(options),
+=======
+        Model {
+            table_name: None,
+            fields: Self::column_to_fields(&query.columns, options),
+            python_type: query.output_model_type(options),
+            protocol_import: None,
+>>>>>>> main
         }
     }
 
@@ -42,6 +58,14 @@ impl Model {
         self.fields
             .iter()
             .filter_map(|(_, type_)| type_.import.as_deref())
+<<<<<<< HEAD
+=======
+            .chain(
+                self.protocol_import
+                    .or(Some("import dataclasses"))
+                    .into_iter(),
+            )
+>>>>>>> main
     }
 
     pub fn column_to_fields(columns: &[Column], options: &Options) -> BTreeMap<String, PythonType> {

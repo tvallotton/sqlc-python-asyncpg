@@ -1,12 +1,20 @@
 #[cfg(test)]
 use crate::mock;
+<<<<<<< HEAD
 use crate::{model_file::ModelFile, proto::File, utils::to_snake_case};
+=======
+use crate::{model_file::ModelFile, model_files::ModelFiles, proto::File, utils::to_snake_case};
+>>>>>>> main
 use std::collections::BTreeMap;
 
 pub struct ModelFileGenerator {
     pub package: String,
     pub default_schema: String,
+<<<<<<< HEAD
     pub model_files: BTreeMap<String, ModelFile>,
+=======
+    pub model_files: ModelFiles,
+>>>>>>> main
 }
 
 impl ModelFileGenerator {
@@ -19,12 +27,20 @@ impl ModelFileGenerator {
     }
 
     pub fn init_file_contents(&self) -> Vec<u8> {
+<<<<<<< HEAD
         let model_file = self.model_files.get(&self.default_schema);
+=======
+        let model_file = self.model_files.model_files.get(&self.default_schema);
+>>>>>>> main
         minijinja::render!(include_str!("../templates/model_init.py.jinja2"),
             package => self.package,
             default_schema => self.default_schema,
             models => model_file.unwrap().models,
+<<<<<<< HEAD
             model_files => self.model_files,
+=======
+            model_files => self.model_files.model_files,
+>>>>>>> main
         )
         .into_bytes()
     }
@@ -35,6 +51,10 @@ impl ModelFileGenerator {
             contents: self.init_file_contents(),
         };
         self.model_files
+<<<<<<< HEAD
+=======
+            .model_files
+>>>>>>> main
             .into_iter()
             .map(|(filename, model_file)| File {
                 name: format!("models/{filename}.py"),

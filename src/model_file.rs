@@ -21,7 +21,10 @@ impl ModelFile {
         self.models
             .iter()
             .flat_map(|model| model.imports())
+<<<<<<< HEAD
             .chain(Some("import dataclasses"))
+=======
+>>>>>>> main
             .collect::<BTreeSet<&str>>()
     }
 
