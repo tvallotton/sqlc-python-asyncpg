@@ -9,7 +9,7 @@ This plugin is an alternative to the official [sqlc-gen-python](https://github.c
 It is designed for use with the asyncpg driver and offers enhanced customization for generated Python code.
 
 ## Usage
-And example usage of the plugin with all its options:
+An example usage of the plugin with all its options:
 ```yaml
 version: "2"
 plugins:
