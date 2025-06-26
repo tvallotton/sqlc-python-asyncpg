@@ -6,7 +6,7 @@ pub fn gather_imports<'a>(imports: impl Iterator<Item = &'a str>) -> String {
     for import in imports {
         import_set.insert(&import);
     }
-    dbg!(&import_set);
+
     let mut output = String::new();
 
     for import in import_set {

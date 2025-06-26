@@ -1,3 +1,4 @@
+use std::fmt::format;
 
 #[cfg(test)]
 use crate::mock;
@@ -38,12 +39,25 @@ macro_rules! new_type {
             decode: None,
         }
     }};
+    ($name:literal,$annotation:literal, $import:tt) => {{
+        let import: Option<&'static str> = Option::from($import);
+        crate::python_type::PythonType {
+            declaration: None,
+            constructor: $name.into(),
+            annotation: $annotation.into(),
+            import: import.map(String::from),
+            encode: None,
+            decode: None,
+        }
+    }};
 }
 
 impl PythonType {
     pub fn from_pg_type(name: &str) -> Self {
         match name {
-            "anyarray" | "anyenum" => new_type!("list[typing.Any]", "import typing"),
+            "anycompatiblearray" | "anyarray" => {
+                new_type!("list[typing.Any]", "import typing")
+            }
             "anyrange" => new_type!("asyncpg.Range", "import asyncpg"),
             "anymultirange" => new_type!("list[asyncpg.Range]", "import asyncpg"),
             "record" => new_type!("asyncpg.Record", "import asyncpg"),
@@ -67,9 +81,12 @@ impl PythonType {
             }
             "interval" => new_type!("datetime.timedelta", "import datetime"),
             "float" | "double" | "precision" => new_type!("float"),
-            "smallint" | "integer" | "bigint" => new_type!("int"),
-            "numeric" => new_type!("decimal.Decimal", "import decimal"),
-            "json" | "jsonb" | "money" => new_type!("str"),
+            "pg_catalog.int8" | "pg_catalog.int4" | "int4" | "int8" | "smallint" | "integer"
+            | "bigint" => {
+                new_type!("int")
+            }
+            "pg_catalog.numeric" | "numeric" => new_type!("decimal.Decimal", "import decimal"),
+            "anyenum" | "json" | "jsonb" | "money" => new_type!("str"),
             "line" => new_type!("asyncpg.Line", "import asyncpg"),
             "lseg" => new_type!("asyncpg.LineSegment", "import asyncpg"),
             "path" => new_type!("asyncpg.types.Path", "import asyncpg.types"),
@@ -77,8 +94,33 @@ impl PythonType {
             "polygon" => new_type!("asyncpg.types.Polygon", "import asyncpg.types"),
             "uuid" => new_type!("uuid.UUID", "import uuid"),
             "tid" => new_type!("tuple"),
-            _ => new_type!("str"),
+            "any" => new_type!("typing.Any", "import typing"),
+            "tstzrange" | "tsrange" => new_type!(
+                "asyncpg.types.Range",
+                "asyncpg.types.Range[datetime.datetime]",
+                "import asyncpg\nimport datetime"
+            ),
+            "daterange" => new_type!(
+                "asyncpg.types.Range",
+                "asyncpg.types.Range[datetime.date]",
+                "import asyncpg\nimport datetime"
+            ),
+            "int4range" | "int8range" => new_type!(
+                "asyncpg.types.Range",
+                "asyncpg.types.Range[int]",
+                "import asyncpg"
+            ),
+            "numrange" => new_type!(
+                "asyncpg.types.Range",
+                "asyncpg.types.Range[float]",
+                "import asyncpg"
+            ),
+            _ => new_type!("typing.Any", "import typing"),
         }
+    }
+
+    pub fn is_any(&self) -> bool {
+        self.annotation == "typing.Any"
     }
 }
 

@@ -1,4 +1,6 @@
+use serde::Serialize;
 use std::collections::BTreeMap;
+use std::fmt::Write;
 
 #[cfg(test)]
 use crate::mock;
@@ -52,6 +54,7 @@ impl Options {
             Some(r#type) => r#type,
             _ => PythonType::from_pg_type(&column.r#type.as_ref().unwrap().name),
         };
+        let is_any = r#type.is_any();
 
         if column.is_array {
             for _ in 0..column.array_dims {
@@ -60,6 +63,15 @@ impl Options {
         }
         if !column.not_null {
             r#type.annotation = format!("{} | None", r#type.annotation);
+        }
+
+        if is_any && column.r#type.is_some() {
+            write!(
+                &mut r#type.annotation,
+                " # use \"{}\" to remap this type in your sqlc.yaml file",
+                column.r#type.as_ref().unwrap().name
+            )
+            .unwrap();
         }
 
         r#type

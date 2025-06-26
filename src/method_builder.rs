@@ -1,4 +1,3 @@
-
 use crate::{
     method::{MaybeEmbeddedType, Method, MethodOutput, MethodParameter},
     model::Model,
@@ -128,13 +127,11 @@ impl<'a> MethodFactory<'a> {
             .fields
             .iter()
             .map(|(name, type_)| (name, type_.clone()));
-        dbg!();
+
         if Iterator::eq(query_columns, model_columns) {
-            dbg!();
             return Some(MethodOutput::from_model(model));
         }
 
-        dbg!();
         None
     }
 
@@ -156,7 +153,7 @@ fn create_from_query() {
     let options = Default::default();
     let mut builder = MethodFactory::new(&mut files, &options);
     let output = builder.add_new_output_model_from_query(&&mock::query_get_all_posts());
-    dbg!(&output);
+
     assert_eq!(output.python_type.declaration.unwrap(), "GetAllPostsRow");
 }
 
