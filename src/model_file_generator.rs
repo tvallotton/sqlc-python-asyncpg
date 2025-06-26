@@ -1,7 +1,6 @@
 #[cfg(test)]
 use crate::mock;
-use crate::{model_file::ModelFile, model_files::ModelFiles, proto::File, utils::to_snake_case};
-use std::collections::BTreeMap;
+use crate::{model_files::ModelFiles, proto::File, utils::to_snake_case};
 
 pub struct ModelFileGenerator {
     pub package: String,

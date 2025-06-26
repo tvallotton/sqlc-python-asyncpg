@@ -1,6 +1,5 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use minijinja::render;
 
 #[cfg(test)]
 use crate::mock::{query_fetch_user_by_id, user_model};

@@ -1,8 +1,8 @@
-use std::io::{self, BufRead, Cursor, Read, Write};
+use std::io::{self, Cursor, Read, Write};
 
 use prost::Message;
 
-use crate::{model_file::ModelFile, proto::GenerateRequest, response_builder::ResponseBuilder};
+use crate::{proto::GenerateRequest, response_builder::ResponseBuilder};
 
 pub mod method;
 pub mod method_builder;

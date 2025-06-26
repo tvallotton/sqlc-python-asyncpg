@@ -1,7 +1,7 @@
 #[cfg(test)]
 use crate::mock;
 use crate::{model::Model, options::Options, proto::Schema};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
 #[derive(Default, Debug, serde::Serialize)]
 pub struct ModelFile {

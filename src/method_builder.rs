@@ -1,16 +1,12 @@
-use std::collections::BTreeMap;
 
 use crate::{
     method::{MaybeEmbeddedType, Method, MethodOutput, MethodParameter},
     model::Model,
-    model_file::ModelFile,
     model_files::ModelFiles,
     options::Options,
     proto::Identifier,
     python_type::PythonType,
     query::Query,
-    query_class::QueryNamespace,
-    utils::to_pascal_case,
 };
 
 pub struct MethodFactory<'a> {

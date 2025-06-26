@@ -1,10 +1,7 @@
-use std::{
-    array,
-    collections::{BTreeMap, BTreeSet},
-};
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::{
-    method::{self, Method},
+    method::{Method},
     proto::File,
     utils::to_pascal_case,
 };

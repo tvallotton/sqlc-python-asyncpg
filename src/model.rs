@@ -1,4 +1,3 @@
-use minijinja::filters::map;
 
 #[cfg(test)]
 use crate::mock;
@@ -6,9 +5,8 @@ use crate::{
     options::Options,
     proto::Column,
     python_type::PythonType,
-    query::{self, Query},
+    query::{Query},
     table::Table,
-    utils::to_pascal_case,
 };
 use std::collections::BTreeMap;
 

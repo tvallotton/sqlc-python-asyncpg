@@ -1,10 +1,10 @@
-use std::{any::TypeId, collections::BTreeMap};
+use std::collections::BTreeMap;
 
 #[cfg(test)]
 use crate::mock;
 
 use crate::{
-    proto::{self, Column, Identifier},
+    proto::{self, Column},
     python_type::PythonType,
 };
 

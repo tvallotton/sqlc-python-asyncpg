@@ -4,7 +4,7 @@ use crate::{
     options::Options,
     proto::{Column, Identifier},
     python_type::PythonType,
-    utils::{to_pascal_case, to_snake_case},
+    utils::to_pascal_case,
 };
 
 #[derive(

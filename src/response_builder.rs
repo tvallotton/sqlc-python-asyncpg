@@ -1,12 +1,10 @@
-use std::collections::BTreeMap;
 
 use crate::{
     method_builder::MethodFactory,
-    model_file::ModelFile,
     model_file_generator::ModelFileGenerator,
     model_files::ModelFiles,
     options::Options,
-    proto::{Catalog, File, GenerateRequest, GenerateResponse, Schema},
+    proto::{File, GenerateRequest, GenerateResponse},
     query_class::QueryNamespace,
 };
 

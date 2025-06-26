@@ -1,9 +1,8 @@
-use std::{collections::BTreeSet, convert::Infallible};
 
 #[cfg(test)]
 use crate::mock;
 
-use crate::{options::TypeOverrideOptions, proto::Column};
+use crate::options::TypeOverrideOptions;
 
 #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize, PartialOrd, Ord)]
 pub struct PythonType {
