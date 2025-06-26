@@ -1,7 +1,7 @@
 # Sqlc-python-asyncpg plugin
 
 ## Overview
-This plugin is an alternative to the official (https://github.com/sqlc-dev/sqlc-gen-python)[sqlc-gen-python] plugin, with added support for:
+This plugin is an alternative to the official [sqlc-gen-python](https://github.com/sqlc-dev/sqlc-gen-python) plugin, with added support for:
 * sqlc.embed
 * Argument grouping
 * Type overrides
