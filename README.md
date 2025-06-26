@@ -16,7 +16,7 @@ plugins:
   - name: sqlc-python-asyncpg
     wasm:
       url: https://github.com/tvallotton/sqlc-python-asyncpg/releases/download/v0.1.1/sqlc-python-asyncpg.wasm
-      sha256: 896a1602374093a40d9ea97e7693e15adc5da7a7eee01285bc43b249198ffa74
+      sha256: fbf5851de61000a438300685d3ea09a04cc1ace3d2a1924ef085dd7f91eb3272
 
 sql:
   - schema: "./migrations"
