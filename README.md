@@ -8,6 +8,36 @@ This plugin is an alternative to the official (https://github.com/sqlc-dev/sqlc-
 
 It is designed for use with the asyncpg driver and offers enhanced customization for generated Python code.
 
+## Usage
+And example usage of the plugin with all its options:
+```yaml
+version: "2"
+plugins:
+  - name: sqlc-python-asyncpg
+    wasm:
+      url: https://github.com/tvallotton/sqlc-python-asyncpg/releases/download/v0.1.1/sqlc-python-asyncpg.wasm
+      sha256: 896a1602374093a40d9ea97e7693e15adc5da7a7eee01285bc43b249198ffa74
+
+sql:
+  - schema: "./migrations"
+    queries:
+      - app/*/.sql
+      - app/*/*/.sql
+    engine: postgresql
+
+    codegen:
+      - out: app/query
+        plugin: sqlc-python-asyncpg
+        options:
+          package: app.query
+          types:
+            jsonb:
+              python_type: dict
+              import: import json
+              encode: json.dumps
+              decode: json.loads
+```
+
 ## Options
 
 ### Package
