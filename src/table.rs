@@ -11,11 +11,11 @@ use crate::{
     Clone, PartialEq, Eq, PartialOrd, Ord, ::prost::Message, serde::Serialize, serde::Deserialize,
 )]
 pub struct Table {
-    #[prost(message, optional, tag = "1")]
+    #[prost(message, optional, tag="1")]
     pub rel: ::core::option::Option<Identifier>,
-    #[prost(message, repeated, tag = "2")]
+    #[prost(message, repeated, tag="2")]
     pub columns: ::prost::alloc::vec::Vec<Column>,
-    #[prost(string, tag = "3")]
+    #[prost(string, tag="3")]
     pub comment: ::prost::alloc::string::String,
 }
 

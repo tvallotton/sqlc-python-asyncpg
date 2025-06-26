@@ -18,7 +18,7 @@ pub struct Options {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq, Eq, Default)]
 pub struct TypeOverrideOptions {
-    pub name: String,
+    pub python_type: String,
     pub import: Option<String>,
     pub encode: Option<String>,
     pub decode: Option<String>,

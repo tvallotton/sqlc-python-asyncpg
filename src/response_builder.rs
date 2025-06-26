@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    method_builder::MethodBuilder,
+    method_builder::MethodFactory,
     model_file::ModelFile,
     model_file_generator::ModelFileGenerator,
+    model_files::ModelFiles,
     options::Options,
     proto::{Catalog, File, GenerateRequest, GenerateResponse, Schema},
     query_class::QueryNamespace,
@@ -12,16 +13,17 @@ use crate::{
 #[derive(Default)]
 pub struct ResponseBuilder {
     root: QueryNamespace,
-    model_files: BTreeMap<String, ModelFile>,
+    model_files: ModelFiles,
     request: GenerateRequest,
     options: Options,
 }
 
 impl ResponseBuilder {
     pub fn new(request: GenerateRequest) -> Self {
+        let options = Options::from_request(&request);
         Self {
             root: QueryNamespace::root(),
-            model_files: Default::default(),
+            model_files: ModelFiles::new(&options),
             options: Options::from_request(&request),
             request,
         }
@@ -29,17 +31,14 @@ impl ResponseBuilder {
 
     pub fn add_catalog(&mut self) -> Option<()> {
         for schema in &self.request.catalog.as_ref()?.schemas {
-            self.model_files.insert(
-                schema.name.clone(),
-                ModelFile::from_schema(schema, &self.options),
-            );
+            self.model_files.add_schema(schema);
         }
         None
     }
 
     pub fn add_queries(&mut self) {
         for query in &self.request.queries {
-            let mut builder = MethodBuilder {
+            let mut builder = MethodFactory {
                 model_files: &mut self.model_files,
                 options: &self.options,
             };

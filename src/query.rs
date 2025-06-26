@@ -8,7 +8,6 @@ use crate::{
     python_type::PythonType,
     utils::to_pascal_case,
 };
-
 #[derive(
     Clone, PartialEq, Eq, PartialOrd, Ord, ::prost::Message, serde::Serialize, serde::Deserialize,
 )]
@@ -32,33 +31,55 @@ pub struct Query {
 }
 
 impl Query {
-    pub fn model_name(&self) -> String {
+    pub fn input_model_type(&self, options: &Options) -> Option<PythonType> {
+        Some(PythonType {
+            declaration: self.input_model_name(),
+            constructor: self.qualified_input_model_name()?,
+            annotation: self.qualified_input_model_name()?,
+            import: Some(format!("from {} import models", options.package)),
+            encode: None,
+            decode: None,
+        })
+    }
+
+    fn input_model_name(&self) -> Option<String> {
+        for param in &self.params {
+            param.column.as_ref()?;
+        }
+
+        self.group_arguments()?;
+
+        return Some(to_pascal_case(&self.name) + "Input");
+    }
+    fn output_model_name(&self) -> String {
         to_pascal_case(&self.name) + "Row"
     }
 
-    pub fn qualified_model_name(&self) -> String {
-        format!("models.{}.{}", self.module_name(), self.model_name())
+    pub fn qualified_output_model_name(&self) -> String {
+        format!("models.{}.{}", self.module_name(), self.output_model_name())
     }
 
-    pub fn model_type(&self, options: &Options) -> PythonType {
+    pub fn qualified_input_model_name(&self) -> Option<String> {
+        Some(format!(
+            "models.{}.{}",
+            self.module_name(),
+            self.input_model_name()?
+        ))
+    }
+
+    pub fn output_model_type(&self, options: &Options) -> PythonType {
         PythonType {
-            declaration: Some(self.model_name()),
-            constructor: self.qualified_model_name(),
-            annotation: self.qualified_model_name(),
+            declaration: Some(self.output_model_name()),
+            constructor: self.qualified_output_model_name(),
+            annotation: self.qualified_output_model_name(),
             import: Some(format!("from {} import models", options.package)),
             encode: None,
             decode: None,
         }
     }
 
-    pub fn module_name(&self) -> &str {
-        let name = self
-            .filename
-            .split_once('.')
-            .map(|(first, _)| first)
-            .unwrap_or_else(|| &self.filename);
-
-        return name;
+    pub fn module_name(&self) -> String {
+        self.namespace_name()
     }
 
     pub fn namespace_name(&self) -> String {
@@ -76,16 +97,27 @@ impl Query {
             .unwrap_or(&self.filename)
             .into()
     }
+
+    pub fn group_arguments(&self) -> Option<&str> {
+        static PATTERN: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"\s*group_arguments: (protocol|dataclass)").unwrap());
+        for val in &self.comments {
+            if let Some(capture) = PATTERN.captures(&val) {
+                return Some(capture.get(1)?.as_str());
+            }
+        }
+        None
+    }
 }
 
 #[test]
 fn model_name() {
     let model = crate::mock::query_get_all_posts();
-    assert_eq!(model.model_name(), "GetAllPostsRow");
+    assert_eq!(model.output_model_name(), "GetAllPostsRow");
 }
 
 #[test]
 fn qualified_model_name() {
     let model = crate::mock::query_get_all_posts();
-    assert_eq!(model.qualified_model_name(), "foo.GetAllPostsRow");
+    assert_eq!(model.qualified_output_model_name(), "foo.GetAllPostsRow");
 }
